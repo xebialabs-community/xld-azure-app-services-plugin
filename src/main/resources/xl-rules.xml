@@ -1,0 +1,39 @@
+<!--
+
+    THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS
+    FOR A PARTICULAR PURPOSE. THIS CODE AND INFORMATION ARE NOT SUPPORTED BY XEBIALABS.
+
+-->
+<rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://www.xebialabs.com/xl-deploy/xl-rules">
+
+  <rule name="azure.deploy-appservice-ftp-target" scope="deployed">
+    <conditions>
+      <type>azure.appservices.FtpDeployedWebContent</type>
+      <operation>CREATE</operation>
+      <operation>MODIFY</operation>
+    </conditions>
+    <steps>
+      <jython>
+        <description expression="true">'Deploy %s on %s' % (deployed.name, deployed.container.name)</description>
+        <script>azure/appservices/upload-to-ftp.py</script>
+      </jython>
+    </steps>
+  </rule>
+
+  <rule name="azure.undeploy-appservice-ftp-target" scope="deployed">
+    <conditions>
+      <type>azure.appservices.FtpDeployedWebContent</type>
+      <operation>MODIFY</operation>
+      <operation>DESTROY</operation>
+    </conditions>
+    <steps>
+      <jython>
+        <description expression="true">'Undeploy %s from %s' % (previousDeployed.name, previousDeployed.container.name)</description>
+        <script>azure/appservices/delete-from-ftp.py</script>
+      </jython>
+    </steps>
+  </rule>
+
+</rules>

@@ -1,0 +1,23 @@
+<!--
+
+    THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS
+    FOR A PARTICULAR PURPOSE. THIS CODE AND INFORMATION ARE NOT SUPPORTED BY XEBIALABS.
+
+-->
+<synthetic
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.xebialabs.com/deployit/synthetic"
+	xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd">
+
+	<type type="azure.appservices.FtpDeploymentTarget" extends="udm.BaseContainer" root="Infrastructure">
+		<property name="ftpHostname" label="FTP hostname" />
+		<property name="ftpDeploymentUsername" label="FTP/deployment user" />
+		<property name="ftpDeploymentPassword" label="FTP/deployment user password" password="true" />
+	</type>
+
+	<type type="azure.appservices.FtpDeployedWebContent" deployable-type="iis.WebContent" container-type="azure.appservices.FtpDeploymentTarget" extends="udm.BaseDeployedArtifact">
+		<property name="physicalPath" label="Target path" description="Target path of the website on the Azure FTP deployment server for the target site" default="/site/wwwroot" />
+	</type>
+
+</synthetic>

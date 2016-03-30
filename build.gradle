@@ -1,0 +1,25 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.gradle.publish:plugin-publish-plugin:0.9.1"
+    classpath "gradle.plugin.com.hierynomus.gradle.plugins:jython-gradle-plugin:0.3.0"
+  }
+}
+
+apply plugin: "com.github.hierynomus.jython"
+apply plugin: "java"
+
+jython {
+  sourceRepositories += 'https://pypi.python.org/packages/source/${dep.name[0]}/${dep.name}/${dep.name.replaceAll(\'-\', \'_\')}-${dep.version}.tar.gz'
+}
+
+dependencies {
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.11'
+}
