@@ -8,32 +8,93 @@
 <rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://www.xebialabs.com/xl-deploy/xl-rules">
 
-  <rule name="azure.deploy-appservice-ftp-target" scope="deployed">
-    <conditions>
-      <type>azure.appservices.FtpDeployedWebContent</type>
-      <operation>CREATE</operation>
-      <operation>MODIFY</operation>
-    </conditions>
-    <steps>
-      <jython>
-        <description expression="true">'Deploy %s on %s' % (deployed.name, deployed.container.name)</description>
-        <script>azure/appservices/upload-to-ftp.py</script>
-      </jython>
-    </steps>
-  </rule>
+    <rule name="azure_app_service.CreateOrUpdatePlan" scope="deployed">
+        <conditions>
+            <type>azure.AppServicePlan</type>
+            <operation>CREATE</operation>
+            <operation>MODIFY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Define App Service Plan [%s] in resource [%s] ' % (deployed.servicePlanName, deployed.container.resourceName)</description>
+                <script>azure_app_services/define_app_service_plan.py</script>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
 
-  <rule name="azure.undeploy-appservice-ftp-target" scope="deployed">
-    <conditions>
-      <type>azure.appservices.FtpDeployedWebContent</type>
-      <operation>MODIFY</operation>
-      <operation>DESTROY</operation>
-    </conditions>
-    <steps>
-      <jython>
-        <description expression="true">'Undeploy %s from %s' % (previousDeployed.name, previousDeployed.container.name)</description>
-        <script>azure/appservices/delete-from-ftp.py</script>
-      </jython>
-    </steps>
-  </rule>
+    <rule name="azure_app_service.RemovePlan" scope="deployed">
+        <conditions>
+            <type>azure.AppServicePlan</type>
+            <operation>DESTROY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Remove App Service Plan [%s] from resource [%s] ' % (previousDeployed.servicePlanName, previousDeployed.container.resourceName)</description>
+                <script>azure_app_services/remove_app_service_plan.py</script>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
 
+    <rule name="azure_app_service.CreateOrUpdateWebApp" scope="deployed">
+        <conditions>
+            <type>azure.WebAppModule</type>
+            <operation>CREATE</operation>
+            <operation>MODIFY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Define Web App [%s] in resource [%s] ' % (deployed.appName, deployed.container.resourceName)</description>
+                <script>azure_app_services/define_web_app.py</script>
+            </jython>
+            <checkpoint/>
+            <jython>
+                <description expression="true">'Upload Web App [%s] data in resource [%s] ' % (deployed.appName, deployed.container.resourceName)</description>
+                <script>azure_app_services/upload_web_app_artifact.py</script>
+                <order>75</order>
+            </jython>
+            <jython>
+                <description expression="true">'Start Web App [%s] in resource [%s] ' % (deployed.appName, deployed.container.resourceName)</description>
+                <script>azure_app_services/start_web_app.py</script>
+                <order>90</order>
+            </jython>
+        </steps>
+    </rule>
+
+    <rule name="azure_app_service.StopWebAppOnModify" scope="deployed">
+        <conditions>
+            <type>azure.WebAppModule</type>
+            <operation>MODIFY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Stop Web App [%s] in resource [%s] ' % (deployed.appName, deployed.container.resourceName)</description>
+                <script>azure_app_services/stop_web_app.py</script>
+                <order>10</order>
+            </jython>
+        </steps>
+    </rule>
+
+    <rule name="azure_app_service.RemoveWebApp" scope="deployed">
+        <conditions>
+            <type>azure.WebAppModule</type>
+            <operation>DESTROY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Stop Web App [%s] in resource [%s] ' % (previousDeployed.appName, previousDeployed.container.resourceName)</description>
+                <script>azure_app_services/stop_web_app.py</script>
+                <order>10</order>
+                <jython-context>
+                    <deployed expression="true">previousDeployed</deployed>
+                </jython-context>
+            </jython>
+            <jython>
+                <description expression="true">'Remove Web App [%s] from resource [%s] ' % (previousDeployed.appName, previousDeployed.container.resourceName)</description>
+                <script>azure_app_services/remove_web_app.py</script>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
 </rules>

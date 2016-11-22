@@ -10,14 +10,67 @@
 	xmlns="http://www.xebialabs.com/deployit/synthetic"
 	xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd">
 
-	<type type="azure.appservices.FtpDeploymentTarget" extends="udm.BaseContainer" root="Infrastructure">
-		<property name="ftpHostname" label="FTP hostname" />
-		<property name="ftpDeploymentUsername" label="FTP/deployment user" />
-		<property name="ftpDeploymentPassword" label="FTP/deployment user password" password="true" />
+    <!-- CONTAINERS -->
+
+	<type type="azure.Subscription" extends="udm.BaseContainer" description="Azure Subscription account" root="INFRASTRUCTURE">
+		<!-- public -->
+		<property name="subscriptionId" description="Subscription Id"/>
+		<property name="tenantId" description="Tenant Id"/>
+		<property name="clientId" description="Client Id"/>
+		<property name="clientKey" password="true" description="Client Key"/>
+        <property name="ftpUser" description="Ftp user"/>
+        <property name="ftpPassword" password="true" description="Ftp password"/>
+
+
+        <!-- hidden -->
+		<property name="azureBaseURL" hidden="true" description="Base URL to access Azure Services" default="https://management.azure.com/"/>
+		<property name="azureManagementURL" hidden="true" description="Azure Management API End Point"  default="https://management.core.windows.net/"/>
+		<property name="azureActiveDirectoryURL" hidden="true" description="Azure Active Directory URL for Authentication" default="https://login.windows.net/"/>
+
+        <!-- control tasks -->
+        <method name="checkConnection" delegate="jythonScript" script="azure_app_services/check_connection.py"/>
 	</type>
 
-	<type type="azure.appservices.FtpDeployedWebContent" deployable-type="iis.WebContent" container-type="azure.appservices.FtpDeploymentTarget" extends="udm.BaseDeployedArtifact">
-		<property name="physicalPath" label="Target path" description="Target path of the website on the Azure FTP deployment server for the target site" default="/site/wwwroot" />
+	<type type="azure.ResourceGroup" extends="udm.BaseContainer">
+        <!-- public -->
+		<property name="subscription" kind="ci" referenced-type="azure.Subscription" as-containment="true"/>
+		<property name="resourceName" />
+		<property name="resourceLocation" description="Available locations are 'centralus, eastasia, southeastasia, eastus, eastus2, westus, westus2, northcentralus, southcentralus, westcentralus, northeurope, westeurope, japaneast, japanwest, brazilsouth, australiasoutheast, australiaeast, westindia, southindia, centralindia, canadacentral, canadaeast, uksouth, ukwest'." />
+		<property name="resourceTags" kind="map_string_string" required="false" />
+
+        <!-- control tasks -->
+		<method name="define" delegate="jythonScript" script="azure_app_services/define_resource_group.py"/>
+        <method name="remove" delegate="jythonScript" script="azure_app_services/remove_resource_group.py"/>
 	</type>
+
+
+    <!-- DEPLOYEDS -->
+
+    <type type="azure.BaseAppServiceDeployed" extends="udm.BaseDeployed" container-type="azure.ResourceGroup" virtual="true">
+        <property name="forceRedeploy" kind="boolean" transient="true" required="false" default="false" category="Redeploy"/>
+    </type>
+
+    <type type="azure.BaseArtifactAppServiceDeployed" extends="udm.BaseDeployedArtifact" container-type="azure.ResourceGroup" virtual="true">
+        <property name="forceRedeploy" kind="boolean" transient="true" required="false" default="false" category="Redeploy"/>
+    </type>
+
+    <type type="azure.AppServicePlan" extends="azure.BaseAppServiceDeployed" deployable-type="azure.AppServicePlanSpec">
+		<generate-deployable type="azure.AppServicePlanSpec" extends="udm.BaseDeployable"/>
+		<property name="servicePlanName"/>
+		<property name="location" description="The location of the service plan" />
+		<property name="sku" kind="enum" enum-class="com.microsoft.azure.management.websites.models.SkuOptions" default="Basic"  description="Web Hosting Plan SKU options."/>
+		<property name="workerSize" kind="enum" enum-class="com.microsoft.azure.management.websites.models.WorkerSizeOptions" default="Small" description="The instance size. Possible values are Small, Medium, or Large."/>
+	</type>
+
+    <type type="azure.WebAppModule" extends="azure.BaseArtifactAppServiceDeployed" deployable-type="azure.WebApp">
+        <generate-deployable type="azure.WebApp" extends="udm.BaseDeployableFileArtifact" />
+        <property name="appName" description="The name of the webapp to create"/>
+        <property name="plan" description="the name of the app service plan eg: Default1."/>
+        <property name="appSettings" kind="map_string_string" required="false" category="App Settings" />
+        <property name="connectionName" required="false" category="DB Connection" />
+        <property name="connectionValue" required="false" category="DB Connection" />
+        <property name="connectionType" kind="enum" enum-class="com.microsoft.azure.management.websites.models.DatabaseServerType" default="SQLAzure" category="DB Connection" />
+    </type>
+
 
 </synthetic>
