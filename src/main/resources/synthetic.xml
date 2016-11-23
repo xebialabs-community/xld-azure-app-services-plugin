@@ -28,7 +28,7 @@
 		<property name="azureActiveDirectoryURL" hidden="true" description="Azure Active Directory URL for Authentication" default="https://login.windows.net/"/>
 
         <!-- control tasks -->
-        <method name="checkConnection" delegate="jythonScript" script="azure_app_services/check_connection.py"/>
+        <method name="checkConnection" label="check connection" delegate="jythonScript" script="azure_app_services/check_connection.py"/>
 	</type>
 
 	<type type="azure.ResourceGroup" extends="udm.BaseContainer">
@@ -39,7 +39,7 @@
 		<property name="resourceTags" kind="map_string_string" required="false" />
 
         <!-- control tasks -->
-		<method name="define" delegate="jythonScript" script="azure_app_services/define_resource_group.py"/>
+		<method name="create" delegate="jythonScript" script="azure_app_services/define_resource_group.py"/>
         <method name="remove" delegate="jythonScript" script="azure_app_services/remove_resource_group.py"/>
 	</type>
 
@@ -71,6 +71,15 @@
         <property name="connectionValue" required="false" category="DB Connection" />
         <property name="connectionType" kind="enum" enum-class="com.microsoft.azure.management.websites.models.DatabaseServerType" default="SQLAzure" category="DB Connection" />
     </type>
+
+	<type type="azure.TriggeredWebJobModule" extends="azure.BaseArtifactAppServiceDeployed" deployable-type="azure.TriggeredWebJob">
+		<generate-deployable type="azure.TriggeredWebJob" extends="udm.BaseDeployableFileArtifact" />
+		<property name="webJobName" description="The name of the web job"/>
+		<property name="executableFileName" description="The name of the file in the web job zip that must be executed"/>
+		<property name="appName" description="The name of the webapp"/>
+		<property name="schedule" required="false" description="cron expression made of 6 fields (second, minute, hour, day, month, day of the week)"/>
+	</type>
+
 
 
 </synthetic>

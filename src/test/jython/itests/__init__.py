@@ -71,3 +71,16 @@ class WebAppCi(CiStub):
         self.connectionName = "test_connection"
         self.connectionValue = "some string connection"
         self.connectionType = DatabaseServerType.Custom
+
+
+class TriggeredWebJobCi(CiStub):
+    def __init__(self):
+        self.name = "MyWebJob"
+        self.id = "Infrastructure/MyAzureSubscription/MyAzureResource/%s" % self.name
+        self.type = "azure.TriggeredWebJobModule"
+        self.webJobName = "xld-webjob"
+        self.executableFileName = "echo.sh"
+        self.appName = "xld-azure-app-service-plugin-webapp"
+        self.schedule = "0 */10 * * * *"
+
+

@@ -93,6 +93,36 @@
             <jython>
                 <description expression="true">'Remove Web App [%s] from resource [%s] ' % (previousDeployed.appName, previousDeployed.container.resourceName)</description>
                 <script>azure_app_services/remove_web_app.py</script>
+                <order>35</order>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
+
+    <rule name="azure_app_service.CreateOrUpdateTriggeredWebJob" scope="deployed">
+        <conditions>
+            <type>azure.TriggeredWebJobModule</type>
+            <operation>CREATE</operation>
+            <operation>MODIFY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Deploy triggered web job [%s] to web app [%s] ' % (deployed.webJobName, deployed.appName)</description>
+                <script>azure_app_services/deploy_triggered_web_job.py</script>
+                <order>76</order>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
+    <rule name="azure_app_service.RemoveTriggeredWebJob" scope="deployed">
+        <conditions>
+            <type>azure.TriggeredWebJobModule</type>
+            <operation>DESTROY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Remove triggered web job [%s] from web app [%s] ' % (previousDeployed.webJobName, previousDeployed.appName)</description>
+                <script>azure_app_services/remove_triggered_web_job.py</script>
             </jython>
             <checkpoint/>
         </steps>

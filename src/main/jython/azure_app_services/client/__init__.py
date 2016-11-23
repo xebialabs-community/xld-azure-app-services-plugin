@@ -1,13 +1,5 @@
 from com.microsoft.azure.management.resources import ResourceManagementService
-from com.microsoft.azure.management.resources.models import ResourceGroup
-from com.microsoft.azure.management.resources.models import ResourceGroupListParameters
-from com.microsoft.azure.management.websites.models import DatabaseServerType
-from com.microsoft.azure.management.websites.models import SkuOptions
-from com.microsoft.azure.management.websites.models import WebSiteDeleteParameters
-from com.microsoft.azure.management.websites.models import WebSiteGetParameters
-from com.microsoft.azure.management.websites.models import WebSiteState
-from com.microsoft.azure.management.websites.models import WebSiteUpdateConnectionStringsParameters
-from com.microsoft.azure.management.websites.models import WorkerSizeOptions
+from com.microsoft.azure.management.resources.models import ResourceGroup, ResourceGroupListParameters
 
 from com.microsoft.windowsazure.exception import ServiceException
 
@@ -17,7 +9,9 @@ from com.microsoft.azure.management.websites import WebSiteManagementService
 from com.microsoft.azure.management.websites.models import WebHostingPlan, WebHostingPlanCreateOrUpdateParameters
 from com.microsoft.azure.management.websites.models import WebSiteBaseProperties, WebSiteBase, WebHostingPlanProperties
 from com.microsoft.azure.management.websites.models import WebSiteNameValueParameters, NameValuePair, WebSiteCreateOrUpdateParameters
-from com.microsoft.azure.management.websites.models import ConnectionStringInfo
+from com.microsoft.azure.management.websites.models import ConnectionStringInfo, WorkerSizeOptions, WebSiteState, SkuOptions
+from com.microsoft.azure.management.websites.models import WebSiteUpdateConnectionStringsParameters, WebSiteGetParameters
+from com.microsoft.azure.management.websites.models import WebSiteDeleteParameters, DatabaseServerType
 
 from com.microsoft.azure.utility import AuthHelper
 
@@ -27,6 +21,8 @@ from java.util import HashMap, ArrayList
 from java.net import SocketTimeoutException
 
 from okhttp3 import OkHttpClient, Credentials, MediaType
+
+import time
 
 
 # Gateway to Azure.
@@ -49,6 +45,7 @@ class AzureClient:
         self.active_directory_url = active_directory_url
         self._access_token = None
         self._zip_media_type = MediaType.parse("application/zip")
+        self._json_media_type = MediaType.parse("application/json")
 
     @staticmethod
     def new_instance(ci):
@@ -83,46 +80,6 @@ class AzureClient:
 
     def _get_ftp_basic_auth(self):
         return Credentials.basic(self.ftp_user, self.ftp_password)
-
-    @staticmethod
-    def _check_return_code(response):
-        rc = response.code()
-        if rc != 200 and rc != 201:
-            msg = "rc=%s" % rc
-            if response.body() is not None:
-                msg = "%s msg=%s" % (msg, response.body().string())
-            raise Exception(msg)
-
-    @staticmethod
-    def _build_kudu_service_url(site_name, service_uri):
-        return "https://%s.scm.azurewebsites.net/api/%s" % (site_name, service_uri)
-
-    def is_kudu_services_available(self, site_name):
-        ok_http_client = OkHttpClient()
-        try:
-            request = Request.Builder() \
-                .url(AzureClient._build_kudu_service_url(site_name, "vfs/site/wwwroot"))\
-                .addHeader("Authorization", self._get_ftp_basic_auth()) \
-                .build()
-            response = ok_http_client.newCall(request).execute()
-            rc = response.code()
-            if rc == 200 or rc == 201:
-                return True
-            else:
-                return False
-        except SocketTimeoutException:
-            return False
-
-    def upload_website(self, site_name, zip_file_path):
-        ok_http_client = OkHttpClient()
-        body = RequestBody.create(self._zip_media_type, File(zip_file_path))
-        request = Request.Builder()\
-            .url(AzureClient._build_kudu_service_url(site_name, "zip/site/wwwroot"))\
-            .put(body)\
-            .addHeader("Authorization", self._get_ftp_basic_auth())\
-            .build()
-        response = ok_http_client.newCall(request).execute()
-        AzureClient._check_return_code(response)
 
     def list_resource_groups(self):
         operations = self._resource_group_operations()
@@ -253,3 +210,72 @@ class AzureClient:
     def get_connection_strings(self, resource_group, site_name):
         settings = self._web_site_operations().getConnectionStrings(resource_group, site_name, None)
         return settings.getResource().getProperties()
+
+    @staticmethod
+    def _check_return_code(response):
+        rc = response.code()
+        if rc != 200 and rc != 201:
+            msg = "rc=%s" % rc
+            if response.body() is not None:
+                msg = "%s msg=%s" % (msg, response.body().string())
+            raise Exception(msg)
+
+    @staticmethod
+    def _build_kudu_service_url(site_name, service_uri):
+        return "https://%s.scm.azurewebsites.net/api/%s" % (site_name, service_uri)
+
+    @staticmethod
+    def _kudu_request(site_name, service_uri):
+        return Request.Builder().url(AzureClient._build_kudu_service_url(site_name, service_uri))
+
+    def _execute_http_request(self, request_builder, error_checking=True):
+        ok_http_client = OkHttpClient()
+        request = request_builder.addHeader("Authorization", self._get_ftp_basic_auth()).build()
+        response = ok_http_client.newCall(request).execute()
+        if error_checking:
+            AzureClient._check_return_code(response)
+        else:
+            return response.code() == 200 or response.code() == 201
+
+    def wait_for_kudu_services(self, site_name):
+        retry_count = 0
+        while retry_count < 12:
+            if self.is_kudu_services_available(site_name):
+                return
+            retry_count += 1
+            time.sleep(5)
+        raise Exception("Azure Kudu Services for web app [%s] unavailable after a minute of waiting. Retry is a while." % site_name)
+
+    def is_kudu_services_available(self, site_name):
+        try:
+            request = self._kudu_request(site_name, "vfs/site")
+            return self._execute_http_request(request, error_checking=False)
+        except SocketTimeoutException:
+            return False
+
+    def upload_website(self, site_name, zip_file_path):
+        body = RequestBody.create(self._zip_media_type, File(zip_file_path))
+        request = self._kudu_request(site_name, "zip/site/wwwroot").put(body)
+        self._execute_http_request(request)
+
+    def deploy_triggered_webjob(self, webjob_name, site_name, executable_file_name, schedule, zip_file_path):
+        body = RequestBody.create(self._zip_media_type, File(zip_file_path))
+        request = self._kudu_request(site_name, "triggeredwebjobs/%s" % webjob_name).put(body)\
+            .addHeader("Content-Disposition", "attachement; filename=%s" % executable_file_name)
+        self._execute_http_request(request)
+        if schedule:
+            self.update_triggered_webjob_schedule(webjob_name, site_name, schedule)
+
+    def update_triggered_webjob_schedule(self, webjob_name, site_name, schedule):
+        body = RequestBody.create(self._json_media_type, '{ "schedule": "%s"}' % schedule)
+        request = self._kudu_request(site_name, "triggeredwebjobs/%s/settings" % webjob_name).put(body)
+        self._execute_http_request(request)
+
+    def remove_triggered_webjob(self, webjob_name, site_name):
+        request = self._kudu_request(site_name, "triggeredwebjobs/%s" % webjob_name).delete()
+        self._execute_http_request(request)
+
+    def triggered_webjob_exists(self, webjob_name, site_name):
+        request = self._kudu_request(site_name, "triggeredwebjobs/%s" % webjob_name)
+        return self._execute_http_request(request, error_checking=False)
+
