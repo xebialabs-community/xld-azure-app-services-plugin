@@ -67,9 +67,9 @@
         <property name="appName" description="The name of the webapp to create"/>
         <property name="plan" description="the name of the app service plan eg: Default1."/>
         <property name="appSettings" kind="map_string_string" required="false" category="App Settings" />
-        <property name="connectionName" required="false" category="DB Connection" />
-        <property name="connectionValue" required="false" category="DB Connection" />
-        <property name="connectionType" kind="enum" enum-class="com.microsoft.azure.management.websites.models.DatabaseServerType" default="SQLAzure" category="DB Connection" />
+        <property name="sqlDatabaseConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
+		<property name="sqlServerConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
+		<property name="customConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
     </type>
 
 	<type type="azure.TriggeredWebJobModule" extends="azure.BaseArtifactAppServiceDeployed" deployable-type="azure.TriggeredWebJob">

@@ -46,6 +46,7 @@ class AzureClient:
         self._access_token = None
         self._zip_media_type = MediaType.parse("application/zip")
         self._json_media_type = MediaType.parse("application/json")
+        self._creds = Credentials.basic(self.ftp_user, self.ftp_password)
 
     @staticmethod
     def new_instance(ci):
@@ -77,9 +78,6 @@ class AzureClient:
 
     def _web_site_operations(self):
         return self._website_management_client().getWebSitesOperations()
-
-    def _get_ftp_basic_auth(self):
-        return Credentials.basic(self.ftp_user, self.ftp_password)
 
     def list_resource_groups(self):
         operations = self._resource_group_operations()
@@ -195,13 +193,24 @@ class AzureClient:
             result[name_value_pair.getName()] = name_value_pair.getValue()
         return result
 
-    def update_db_conn_settings(self, resource_group, site_name, location, conn_name, conn_string, conn_type):
+    @staticmethod
+    def _new_connection_string_info(name, value, db_server_type):
         csi = ConnectionStringInfo()
-        csi.setName(conn_name)
-        csi.setConnectionString(conn_string)
-        csi.setType(DatabaseServerType.valueOf(str(conn_type)))
+        csi.setName(name)
+        csi.setConnectionString(value)
+        csi.setType(db_server_type)
+        return csi
+
+    def update_db_conn_settings(self, resource_group, site_name, location,
+                                sql_database_conn_strings, sql_server_conn_strings, custom_conn_string):
         conn_string_infos_list = ArrayList()
-        conn_string_infos_list.add(csi)
+        constructor = self._new_connection_string_info
+        for key, value in sql_database_conn_strings.items():
+            conn_string_infos_list.add(constructor(key, value, DatabaseServerType.SQLAzure))
+        for key, value in sql_server_conn_strings.items():
+            conn_string_infos_list.add(constructor(key, value, DatabaseServerType.SQLServer))
+        for key, value in custom_conn_string.items():
+            conn_string_infos_list.add(constructor(key, value, DatabaseServerType.Custom))
         conn_params = WebSiteUpdateConnectionStringsParameters()
         conn_params.setProperties(conn_string_infos_list)
         conn_params.setLocation(location)
@@ -230,7 +239,7 @@ class AzureClient:
 
     def _execute_http_request(self, request_builder, error_checking=True):
         ok_http_client = OkHttpClient()
-        request = request_builder.addHeader("Authorization", self._get_ftp_basic_auth()).build()
+        request = request_builder.addHeader("Authorization", self._creds).build()
         response = ok_http_client.newCall(request).execute()
         if error_checking:
             AzureClient._check_return_code(response)

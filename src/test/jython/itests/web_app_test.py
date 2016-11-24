@@ -39,12 +39,7 @@ class WebAppTest(unittest.TestCase):
         self.assertEqual(app_settings['mykey'], "myvalue")
 
         connection_strings = self.client.get_connection_strings(self.resource_group, self.site_name)
-        self.assertEqual(len(connection_strings), 1)
-        connection_string_info = connection_strings[0]
-        self.assertEqual(connection_string_info.getName(), "test_connection")
-        self.assertEqual(connection_string_info.getConnectionString(), "some string connection")
-        # Azure returns None the the type field. Ignore the assertion
-        # self.assertEqual(connection_string_info.getType(), DatabaseServerType.Custom)
+        self.assertEqual(len(connection_strings), 3)
 
         upload_web_app_artifact.upload(self.web_app_ci, self.web_app_ci.container)
 

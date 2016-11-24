@@ -10,10 +10,11 @@ def create_or_update(deployed, container):
         print "Updating app settings"
         client.update_app_settings(container.resourceName, deployed.appName, container.resourceLocation, deployed.appSettings)
 
-    if deployed.connectionName and deployed.connectionValue and deployed.connectionType:
-        print "Updating db connection settings"
+    if deployed.sqlDatabaseConnectionStrings.keys() or deployed.sqlServerConnectionStrings.keys() or deployed.customConnectionStrings.keys():
+        print "Updating connection strings"
         client.update_db_conn_settings(container.resourceName, deployed.appName, container.resourceLocation,
-                                       deployed.connectionName, deployed.connectionValue, deployed.connectionType)
+                                       deployed.sqlDatabaseConnectionStrings, deployed.sqlServerConnectionStrings,
+                                       deployed.customConnectionStrings)
     print "Done"
 
 if __name__ == '__main__' or __name__ == '__builtin__':

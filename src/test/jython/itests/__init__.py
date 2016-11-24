@@ -68,9 +68,9 @@ class WebAppCi(CiStub):
         self.appName = "xld-azure-app-service-plugin-webapp"
         self.plan = "xld_azure_app_service_plugin_basic_plan"
         self.appSettings = {"mykey": "myvalue"}
-        self.connectionName = "test_connection"
-        self.connectionValue = "some string connection"
-        self.connectionType = DatabaseServerType.Custom
+        self.sqlDatabaseConnectionStrings = {"mykey1": "myvalue"}
+        self.sqlServerConnectionStrings = {"mykey2": "myvalue"}
+        self.customConnectionStrings = {"mykey3": "myvalue"}
 
 
 class TriggeredWebJobCi(CiStub):
