@@ -2,6 +2,12 @@
 
 ### Work in progress
 
-* Currently supports Azure Web App deployments
-* TODO: support webjobs
+* Supports Azure Web App deployments
+	* Application Settings
+	* Connection Strings
+* Supports webjobs
+	* Triggered
+	* Continuous
+
+	 
 * TODO: update documentation

@@ -84,3 +84,13 @@ class TriggeredWebJobCi(CiStub):
         self.schedule = "0 */10 * * * *"
 
 
+class ContinuousWebJobCi(CiStub):
+    def __init__(self):
+        self.name = "MyContinuousWebJob"
+        self.id = "Infrastructure/MyAzureSubscription/MyAzureResource/%s" % self.name
+        self.type = "azure.ContinuousWebJobModule"
+        self.webJobName = "xld-continuous-webjob"
+        self.executableFileName = "echo.sh"
+        self.appName = "xld-azure-app-service-plugin-webapp"
+        self.isSingleton = False
+

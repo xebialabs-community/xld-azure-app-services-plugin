@@ -71,7 +71,7 @@
             <jython>
                 <description expression="true">'Stop Web App [%s] in resource [%s] ' % (deployed.appName, deployed.container.resourceName)</description>
                 <script>azure_app_services/stop_web_app.py</script>
-                <order>10</order>
+                <order>15</order>
             </jython>
         </steps>
     </rule>
@@ -123,6 +123,55 @@
             <jython>
                 <description expression="true">'Remove triggered web job [%s] from web app [%s] ' % (previousDeployed.webJobName, previousDeployed.appName)</description>
                 <script>azure_app_services/remove_triggered_web_job.py</script>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
+
+    <rule name="azure_app_service.CreateOrUpdateContinuousWebJob" scope="deployed">
+        <conditions>
+            <type>azure.ContinuousWebJobModule</type>
+            <operation>CREATE</operation>
+            <operation>MODIFY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Deploy continuous web job [%s] to web app [%s] ' % (deployed.webJobName, deployed.appName)</description>
+                <script>azure_app_services/deploy_continuous_web_job.py</script>
+                <order>76</order>
+            </jython>
+            <checkpoint/>
+        </steps>
+    </rule>
+
+    <rule name="azure_app_service.StopContinuousWebJobOnModify" scope="deployed">
+        <conditions>
+            <type>azure.ContinuousWebJobModule</type>
+            <operation>MODIFY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Stop continuous web job [%s] in web app [%s] ' % (deployed.webJobName, deployed.appName)</description>
+                <script>azure_app_services/stop_continuous_web_job.py</script>
+                <order>10</order>
+            </jython>
+        </steps>
+    </rule>
+
+    <rule name="azure_app_service.RemoveContinuousWebJob" scope="deployed">
+        <conditions>
+            <type>azure.ContinuousWebJobModule</type>
+            <operation>DESTROY</operation>
+        </conditions>
+        <steps>
+            <jython>
+                <description expression="true">'Stop continuous web job [%s] in web app [%s] ' % (previousDeployed.webJobName, previousDeployed.appName)</description>
+                <script>azure_app_services/stop_continuous_web_job.py</script>
+                <order>10</order>
+            </jython>
+            <jython>
+                <description expression="true">'Remove continuous web job [%s] from web app [%s] ' % (previousDeployed.webJobName, previousDeployed.appName)</description>
+                <script>azure_app_services/remove_continuous_web_job.py</script>
             </jython>
             <checkpoint/>
         </steps>

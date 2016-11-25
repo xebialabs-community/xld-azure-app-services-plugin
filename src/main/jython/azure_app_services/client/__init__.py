@@ -23,6 +23,7 @@ from java.net import SocketTimeoutException
 from okhttp3 import OkHttpClient, Credentials, MediaType
 
 import time
+import json
 
 
 # Gateway to Azure.
@@ -221,12 +222,17 @@ class AzureClient:
         return settings.getResource().getProperties()
 
     @staticmethod
-    def _check_return_code(response):
+    def _check_return_code(response, reply_body=None):
         rc = response.code()
         if rc != 200 and rc != 201:
             msg = "rc=%s" % rc
-            if response.body() is not None:
-                msg = "%s msg=%s" % (msg, response.body().string())
+            if reply_body is not None:
+                msg = "%s msg=%s" % (msg, reply_body)
+            elif response.body() is not None:
+                try:
+                    msg = "%s msg=%s" % (msg, response.body().string())
+                finally:
+                    response.body().close()
             raise Exception(msg)
 
     @staticmethod
@@ -238,13 +244,19 @@ class AzureClient:
         return Request.Builder().url(AzureClient._build_kudu_service_url(site_name, service_uri))
 
     def _execute_http_request(self, request_builder, error_checking=True):
-        ok_http_client = OkHttpClient()
-        request = request_builder.addHeader("Authorization", self._creds).build()
-        response = ok_http_client.newCall(request).execute()
+        response = self._execute_http_request_return_response(request_builder)
         if error_checking:
             AzureClient._check_return_code(response)
         else:
-            return response.code() == 200 or response.code() == 201
+            if response.code() == 200 or response.code() == 201:
+                return 0
+            else:
+                return response.code()
+
+    def _execute_http_request_return_response(self, request_builder):
+        ok_http_client = OkHttpClient()
+        request = request_builder.addHeader("Authorization", self._creds).build()
+        return ok_http_client.newCall(request).execute()
 
     def wait_for_kudu_services(self, site_name):
         retry_count = 0
@@ -257,34 +269,90 @@ class AzureClient:
 
     def is_kudu_services_available(self, site_name):
         try:
-            request = self._kudu_request(site_name, "vfs/site")
+            request = self._kudu_request(site_name, "vfs/site").get()
             return self._execute_http_request(request, error_checking=False)
         except SocketTimeoutException:
-            return False
+            return 504
 
     def upload_website(self, site_name, zip_file_path):
         body = RequestBody.create(self._zip_media_type, File(zip_file_path))
         request = self._kudu_request(site_name, "zip/site/wwwroot").put(body)
         self._execute_http_request(request)
 
-    def deploy_triggered_webjob(self, webjob_name, site_name, executable_file_name, schedule, zip_file_path):
+    def _deploy_webjob(self, webjob_name, site_name, executable_file_name, zip_file_path, webjob_service_type="triggeredwebjobs" ):
         body = RequestBody.create(self._zip_media_type, File(zip_file_path))
-        request = self._kudu_request(site_name, "triggeredwebjobs/%s" % webjob_name).put(body)\
+        request = self._kudu_request(site_name, "%s/%s" % (webjob_service_type, webjob_name)).put(body) \
             .addHeader("Content-Disposition", "attachement; filename=%s" % executable_file_name)
         self._execute_http_request(request)
-        if schedule:
-            self.update_triggered_webjob_schedule(webjob_name, site_name, schedule)
 
-    def update_triggered_webjob_schedule(self, webjob_name, site_name, schedule):
-        body = RequestBody.create(self._json_media_type, '{ "schedule": "%s"}' % schedule)
-        request = self._kudu_request(site_name, "triggeredwebjobs/%s/settings" % webjob_name).put(body)
+    def deploy_continuous_webjob(self, webjob_name, site_name, executable_file_name, is_singleton, zip_file_path):
+        self._deploy_webjob(webjob_name, site_name, executable_file_name, zip_file_path, webjob_service_type="continuouswebjobs")
+        singleton_string = "true" if is_singleton else "false"
+        body = '{ "is_singleton": %s }' % singleton_string
+        self._update_webjob_setting(webjob_name, site_name, body, webjob_service_type="continuouswebjobs")
+
+    def deploy_triggered_webjob(self, webjob_name, site_name, executable_file_name, schedule, zip_file_path):
+        self._deploy_webjob(webjob_name, site_name, executable_file_name, zip_file_path)
+        if schedule:
+            body = '{ "schedule": "%s"}' % schedule
+            self._update_webjob_setting(webjob_name, site_name, body)
+
+    def _update_webjob_setting(self, webjob_name, site_name, json_body, webjob_service_type="triggeredwebjobs"):
+        body = RequestBody.create(self._json_media_type, json_body)
+        request = self._kudu_request(site_name, "%s/%s/settings" % (webjob_service_type, webjob_name)).put(body)
         self._execute_http_request(request)
 
     def remove_triggered_webjob(self, webjob_name, site_name):
         request = self._kudu_request(site_name, "triggeredwebjobs/%s" % webjob_name).delete()
         self._execute_http_request(request)
 
+    def remove_continuous_webjob(self, webjob_name, site_name):
+        request = self._kudu_request(site_name, "continuouswebjobs/%s" % webjob_name).delete()
+        self._execute_http_request(request)
+
     def triggered_webjob_exists(self, webjob_name, site_name):
         request = self._kudu_request(site_name, "triggeredwebjobs/%s" % webjob_name)
         return self._execute_http_request(request, error_checking=False)
+
+    def continuous_webjob_exists(self, webjob_name, site_name):
+        request = self._kudu_request(site_name, "continuouswebjobs/%s" % webjob_name)
+        return self._execute_http_request(request, error_checking=False)
+
+    def continuous_webjob_status(self, webjob_name, site_name):
+        request = self._kudu_request(site_name, "continuouswebjobs/%s" % webjob_name)
+        response = self._execute_http_request_return_response(request)
+        self._check_return_code(response)
+        reply = json.loads(str(response.body().string()))
+        response.body().close()
+        return reply["status"]
+
+    def _retry_stop_start_webjob(self, site_name, service_uri):
+        retry = 0
+        while retry < 12:
+            body = RequestBody.create(self._json_media_type, "")
+            request = self._kudu_request(site_name, service_uri).post(body)
+            response = self._execute_http_request_return_response(request)
+            reply_body = str(response.body().string())
+            response.body().close()
+            if response.code() == 404 and reply_body.startswith('"No route registered for'):
+                retry += 1
+                time.sleep(5)
+            else:
+                self._check_return_code(response, reply_body)
+                return True
+        raise Exception("rc=404, msg='No route registered for 'api/%s''" % service_uri)
+
+    def start_continuous_webjob(self, webjob_name, site_name):
+        status = self.continuous_webjob_status(webjob_name, site_name)
+        if status == 'Stopped':
+            return self._retry_stop_start_webjob(site_name, "continuouswebjobs/%s/start" % webjob_name)
+        return False
+
+    def stop_continuous_webjob(self, webjob_name, site_name):
+        status = self.continuous_webjob_status(webjob_name, site_name)
+        if status != 'Stopped':
+            return self._retry_stop_start_webjob(site_name, "continuouswebjobs/%s/stop" % webjob_name)
+        return False
+
+
 

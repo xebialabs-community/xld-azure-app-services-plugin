@@ -72,14 +72,21 @@
 		<property name="customConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
     </type>
 
-	<type type="azure.TriggeredWebJobModule" extends="azure.BaseArtifactAppServiceDeployed" deployable-type="azure.TriggeredWebJob">
-		<generate-deployable type="azure.TriggeredWebJob" extends="udm.BaseDeployableFileArtifact" />
+	<type type="azure.BaseWebJobModule" extends="azure.BaseArtifactAppServiceDeployed" virtual="true">
 		<property name="webJobName" description="The name of the web job"/>
 		<property name="executableFileName" description="The name of the file in the web job zip that must be executed"/>
 		<property name="appName" description="The name of the webapp"/>
+	</type>
+
+	<type type="azure.TriggeredWebJobModule" extends="azure.BaseWebJobModule" deployable-type="azure.TriggeredWebJob">
+		<generate-deployable type="azure.TriggeredWebJob" extends="udm.BaseDeployableFileArtifact" />
 		<property name="schedule" required="false" description="cron expression made of 6 fields (second, minute, hour, day, month, day of the week)"/>
 	</type>
 
+	<type type="azure.ContinuousWebJobModule" extends="azure.BaseWebJobModule" deployable-type="azure.ContinuousWebJob">
+		<generate-deployable type="azure.ContinuousWebJob" extends="udm.BaseDeployableFileArtifact" />
+		<property name="isSingleton" kind="boolean" default="false" required="false" description="If a continuous job is set as singleton it'll run only on a single instance opposed to running on all instances. By default, it runs on all instances."/>
+	</type>
 
 
 </synthetic>
