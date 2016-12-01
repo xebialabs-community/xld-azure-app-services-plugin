@@ -12,6 +12,7 @@ from com.microsoft.azure.management.websites.models import WebSiteNameValueParam
 from com.microsoft.azure.management.websites.models import ConnectionStringInfo, WorkerSizeOptions, WebSiteState, SkuOptions
 from com.microsoft.azure.management.websites.models import WebSiteUpdateConnectionStringsParameters, WebSiteGetParameters
 from com.microsoft.azure.management.websites.models import WebSiteDeleteParameters, DatabaseServerType
+from com.microsoft.azure.management.websites.models import WebSiteUpdateConfigurationDetails, WebSiteUpdateConfigurationParameters
 
 from com.microsoft.azure.utility import AuthHelper
 
@@ -30,6 +31,19 @@ import json
 # Uses the Azure Java SDK version 0.9. https://github.com/Azure/azure-sdk-for-java/tree/0.9
 from okhttp3 import Request
 from okhttp3 import RequestBody
+
+
+class WebAppGeneralSettings(object):
+    def __init__(self, platform_32bit=True, always_on=False, net_framework_version="", php_version="", python_version="",
+                 java_version="", java_container="TOMCAT", java_container_version=""):
+        self.platform_32bit = platform_32bit
+        self.always_on = always_on
+        self.net_framework_version = net_framework_version
+        self.php_version = php_version
+        self.python_version = python_version
+        self.java_version = java_version
+        self.java_container = java_container
+        self.java_container_version = java_container_version
 
 
 class AzureClient:
@@ -193,6 +207,45 @@ class AzureClient:
         for name_value_pair in settings.getResource().getProperties():
             result[name_value_pair.getName()] = name_value_pair.getValue()
         return result
+
+    def update_general_settings(self, resource_group, site_name, location, settings):
+        wsuc_details = WebSiteUpdateConfigurationDetails()
+        wsuc_details.setUse32BitWorkerProcess(settings.platform_32bit)
+        wsuc_details.setAlwaysOn(settings.always_on)
+        if settings.java_version:
+            wsuc_details.setNetFrameworkVersion("")
+            wsuc_details.setPhpVersion("")
+            wsuc_details.setPythonVersion("")
+            if not settings.java_container:
+                raise Exception("Java Container required.")
+            wsuc_details.setJavaContainer(settings.java_container)
+            if not settings.java_container_version:
+                raise Exception("Java Container Version required.")
+            wsuc_details.setJavaContainerVersion(settings.java_container_version)
+            wsuc_details.setJavaVersion(settings.java_version)
+        else:
+            wsuc_details.setNetFrameworkVersion(settings.net_framework_version)
+            wsuc_details.setPhpVersion(settings.php_version)
+            wsuc_details.setPythonVersion(settings.python_version)
+
+        wsuc_params = WebSiteUpdateConfigurationParameters()
+        wsuc_params.setProperties(wsuc_details)
+        wsuc_params.setLocation(location)
+        self._web_site_operations().updateConfiguration(resource_group, site_name, None, wsuc_params)
+
+    def get_general_settings(self, resource_group, site_name):
+        result = self._web_site_operations().getConfiguration(resource_group, site_name, None, None)
+        props = result.getResource().getProperties()
+        settings = WebAppGeneralSettings()
+        settings.platform_32bit = props.isUse32BitWorkerProcess()
+        settings.java_version = props.getJavaVersion()
+        settings.java_container = props.getJavaContainer()
+        settings.java_container_version = props.getJavaContainerVersion()
+        # settings.always_on has no associated value in the props :( Check if in meta-data maybe???
+        settings.net_framework_version = props.getNetFrameworkVersion()
+        settings.php_version = props.getPhpVersion()
+        settings.python_version = props.getPythonVersion()
+        return settings
 
     @staticmethod
     def _new_connection_string_info(name, value, db_server_type):

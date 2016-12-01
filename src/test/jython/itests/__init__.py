@@ -9,6 +9,7 @@ class CiStub(object):
 
 
 class SubscriptionCi(CiStub):
+
     def __init__(self):
         self.name = "MyAzureSubscription"
         self.id = "Infrastructure/%s" % self.name
@@ -39,17 +40,19 @@ class SubscriptionCi(CiStub):
 
 
 class ResourceGroupCi(CiStub):
+
     def __init__(self):
         self.name = "MyAzureResource"
         self.id = "Infrastructure/MyAzureSubscription/%s" % self.name
         self.type = "azure.ResourceGroup"
         self.subscription = SubscriptionCi()
-        self.resourceName = "xld_azure_app_service_plugin_tests"
+        self.resourceName = "xld_azure_app_service_plugin_tests2"
         self.resourceLocation = "westeurope"
         self.resourceTags = {'myTag': 'myTagValue'}
 
 
 class AppServicePlanCi(CiStub):
+
     def __init__(self):
         self.name = "MyAppServicePlan"
         self.id = "Infrastructure/MyAzureSubscription/MyAzureResource/%s" % self.name
@@ -61,6 +64,7 @@ class AppServicePlanCi(CiStub):
 
 
 class WebAppCi(CiStub):
+
     def __init__(self):
         self.name = "MyWebApp"
         self.id = "Infrastructure/MyAzureSubscription/MyAzureResource/%s" % self.name
@@ -71,9 +75,18 @@ class WebAppCi(CiStub):
         self.sqlDatabaseConnectionStrings = {"mykey1": "myvalue"}
         self.sqlServerConnectionStrings = {"mykey2": "myvalue"}
         self.customConnectionStrings = {"mykey3": "myvalue"}
+        self.platform32bit = True
+        self.alwaysOn = False
+        self.netFrameworkVersion = "v4.0"
+        self.phpVersion = "5.6"
+        self.pythonVersion = "2.7"
+        self.javaVersion = "1.8.0_60"
+        self.javaContainer = "TOMCAT"
+        self.javaContainerVersion = "8.5.6"
 
 
 class TriggeredWebJobCi(CiStub):
+
     def __init__(self):
         self.name = "MyWebJob"
         self.id = "Infrastructure/MyAzureSubscription/MyAzureResource/%s" % self.name
@@ -85,6 +98,7 @@ class TriggeredWebJobCi(CiStub):
 
 
 class ContinuousWebJobCi(CiStub):
+
     def __init__(self):
         self.name = "MyContinuousWebJob"
         self.id = "Infrastructure/MyAzureSubscription/MyAzureResource/%s" % self.name

@@ -31,9 +31,16 @@ class WebAppTest(unittest.TestCase):
         self.client.destroy_resource_group(self.resource_group)
 
     def test_web_app(self):
+        self.web_app_ci.javaVersion = ""
         self.assertFalse(self.client.website_exists(self.resource_group, self.site_name))
         define_web_app.create_or_update(self.web_app_ci, self.web_app_ci.container)
         self.assertTrue(self.client.website_exists(self.resource_group, self.site_name))
+
+        general_settings = self.client.get_general_settings(self.resource_group, self.site_name)
+        self.assertEqual(general_settings.php_version, "5.6")
+        self.assertEqual(general_settings.python_version, "2.7")
+        self.assertEqual(general_settings.net_framework_version, "v4.0")
+        self.assertEqual(general_settings.platform_32bit, True)
 
         app_settings = self.client.get_app_settings(self.resource_group, self.site_name)
         self.assertEqual(app_settings['mykey'], "myvalue")

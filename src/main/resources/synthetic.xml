@@ -66,10 +66,25 @@
         <generate-deployable type="azure.WebApp" extends="udm.BaseDeployableFileArtifact" />
         <property name="appName" description="The name of the webapp to create"/>
         <property name="plan" description="the name of the app service plan eg: Default1."/>
-        <property name="appSettings" kind="map_string_string" required="false" category="App Settings" />
-        <property name="sqlDatabaseConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
+
+		<property name="appSettings" kind="map_string_string" required="false" category="App Settings" />
+		<property name="sqlDatabaseConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
 		<property name="sqlServerConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
 		<property name="customConnectionStrings" kind="map_string_string" required="false" category="Connection Strings" />
+		
+		<property name="platform32bit" label="32Bit Platform" kind="boolean" category="General Settings" required="false" default="true"/>
+		<property name="alwaysOn" kind="boolean" category="General Settings" required="false" default="false"/>
+		<property name="netFrameworkVersion" category="General Settings" required="false"
+				  description="The .NET Framework version. Value like v3.5 and v4.6. Please refer to Azure Portal for current valid values."/>
+		<property name="phpVersion" category="General Settings" required="false"
+				  description="An empty string disables. Values like 5.5, 5.6 and 7.0. Please refer to Azure Portal for current valid values."/>
+		<property name="pythonVersion" category="General Settings" required="false"
+				  description="An empty string disables. Values like 2.7 and 3.4. Please refer to Azure Portal for current valid values."/>
+		<property name="javaVersion" category="General Settings" required="false"
+				  description="An empty string disables. Values like 1.7, 1.7.0_51, 1.7.0_71, 1.8, 1.8.0_25, 1.8.0_60, 1.8.0_73 and 1.8.0_111. Please refer to Azure Portal for current valid values."/>
+		<property name="javaContainer" category="General Settings" required="false" default="TOMCAT" description="Valid values are TOMCAT, JETTY"/>
+		<property name="javaContainerVersion" category="General Settings" required="false"
+				  description="An empty string disables. Values like 7.0.52, 7.0.62, 7.0, 8.0.23, 8.0, 9.1.0.20131115 and 9.1. Please refer to Azure Portal for current valid values."/>
     </type>
 
 	<type type="azure.BaseWebJobModule" extends="azure.BaseArtifactAppServiceDeployed" virtual="true">
