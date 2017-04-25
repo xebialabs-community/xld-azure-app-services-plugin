@@ -10,6 +10,11 @@ targetCompatibility = 1.8
 
 version = '6.0.0-alpha2'
 
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
 sourceSets.main.resources.srcDirs = ["src/main/jython", "src/main/resources"]
 sourceSets.test.resources.srcDirs = ["src/test/jython", "src/test/resources"]
 
