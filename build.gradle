@@ -8,19 +8,7 @@ apply plugin: 'java'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = '6.0.0-alpha1'
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        credentials {
-            username 'community-plugins'
-            password 'community'
-        }
-        url 'http://nexus.xebialabs.com/nexus/content/repositories/releases'
-    }
-}
+version = '6.0.0-alpha2'
 
 sourceSets.main.resources.srcDirs = ["src/main/jython", "src/main/resources"]
 sourceSets.test.resources.srcDirs = ["src/test/jython", "src/test/resources"]

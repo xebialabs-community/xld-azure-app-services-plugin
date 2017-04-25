@@ -11,7 +11,7 @@
 
 [xld-azure-app-services-plugin-travis-image]: https://travis-ci.org/xebialabs-community/xld-azure-app-services-plugin.svg?branch=master
 [xld-azure-app-services-plugin-travis-url]: https://travis-ci.org/xebialabs-community/xld-azure-app-services-plugin
-[xld-azure-app-services-plugin-codacy-image]: https://api.codacy.com/project/badge/Grade/57314806d4eb4f6a855707edc6c8ef75
+[xld-azure-app-services-plugin-codacy-image]: https://api.codacy.com/project/badge/Grade/dac4a5ff98784e8487216b7d3f26761a
 [xld-azure-app-services-plugin-codacy-url]: https://www.codacy.com/app/joris-dewinne/xld-azure-app-services-plugin
 [xld-azure-app-services-plugin-code-climate-image]: https://codeclimate.com/github/xebialabs-community/xld-azure-app-services-plugin/badges/gpa.svg
 [xld-azure-app-services-plugin-code-climate-url]: https://codeclimate.com/github/xebialabs-community/xld-azure-app-services-plugin
