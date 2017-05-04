@@ -8,14 +8,50 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import unittest
+
+from itests import CiStub, SubscriptionCi
+
 from azure_app_services.client import AzureClient
 
+from azure_app_services import inspect
 
-def check_connection(subscription):
-    client = AzureClient.new_instance(subscription)
-    print "Checking connection by fetching known resource groups."
-    print client.list_resource_group_names()
-    print "Done"
 
-if __name__ == '__main__' or __name__ == '__builtin__':
-    check_connection(thisCi)
+class InspectionContextMock(object):
+
+    def __init__(self):
+        self.cis = []
+
+    def discovered(self, ci):
+        pass
+
+    def inspected(self, ci):
+        self.cis.append(ci)
+
+class DescriptorMock(object):
+
+    def newInstance(self, id):
+        ci = CiStub()
+        ci.id = id
+
+        if (id.rfind("/") != -1):
+            ci.name = id[id.rfind("/")+1:]
+        else:
+            ci.name = id
+        return ci
+
+
+class InspectionTest(unittest.TestCase):
+
+    def setUp(self):
+        self.subscription = SubscriptionCi()
+        self.inspection_ctx = InspectionContextMock()
+        self.descriptor = DescriptorMock()
+
+    def test_discovery(self):
+        self.client = AzureClient.new_instance(self.subscription)
+        inspect.perform_discovery(self.subscription, self.inspection_ctx, self.descriptor, self.descriptor)
+        for ci in self.inspection_ctx.cis:
+            print ci.__dict__
+        # self.assertTrue(len(self.inspection_ctx) > 0)
+

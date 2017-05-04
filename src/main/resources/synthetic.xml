@@ -23,17 +23,18 @@
 
     <!-- CONTAINERS -->
 
-	<type type="azure.Subscription" extends="udm.BaseContainer" description="Azure Subscription account" root="INFRASTRUCTURE">
+	<type type="azure.Subscription" extends="azure.InspectableContainer" description="Azure Subscription account" root="INFRASTRUCTURE" inspectable="true">
 		<!-- public -->
-		<property name="subscriptionId" description="Subscription Id"/>
-		<property name="tenantId" description="Tenant Id"/>
-		<property name="clientId" description="Client Id"/>
-		<property name="clientKey" password="true" description="Client Key"/>
-        <property name="ftpUser" description="Ftp user"/>
-        <property name="ftpPassword" password="true" description="Ftp password"/>
+		<property name="subscriptionId" inspectionProperty="true" description="Subscription Id"/>
+		<property name="tenantId" inspectionProperty="true" description="Tenant Id"/>
+		<property name="clientId" inspectionProperty="true" description="Client Id"/>
+		<property name="clientKey" inspectionProperty="true" password="true" description="Client Key"/>
+        <property name="ftpUser" inspectionProperty="true" description="Ftp user"/>
+        <property name="ftpPassword"  inspectionProperty="true" password="true" description="Ftp password"/>
 
 
         <!-- hidden -->
+		<property name="inspectionScript" hidden="true" default="azure_app_services/inspect.py"/>
 		<property name="azureBaseURL" hidden="true" description="Base URL to access Azure Services" default="https://management.azure.com/"/>
 		<property name="azureManagementURL" hidden="true" description="Azure Management API End Point"  default="https://management.core.windows.net/"/>
 		<property name="azureActiveDirectoryURL" hidden="true" description="Azure Active Directory URL for Authentication" default="https://login.windows.net/"/>
@@ -97,6 +98,7 @@
 		<property name="javaContainerVersion" category="General Settings" required="false"
 				  description="An empty string disables. Values like 7.0.52, 7.0.62, 7.0, 8.0.23, 8.0, 9.1.0.20131115 and 9.1. Please refer to Azure Portal for current valid values."/>
     </type>
+
 
 	<type type="azure.BaseWebJobModule" extends="azure.BaseArtifactAppServiceDeployed" virtual="true">
 		<property name="webJobName" description="The name of the web job"/>

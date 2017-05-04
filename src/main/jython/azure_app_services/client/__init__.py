@@ -104,11 +104,19 @@ class AzureClient:
     def _web_site_operations(self):
         return self._website_management_client().getWebSitesOperations()
 
+    def list_resource_group_names(self):
+        return [r.getName() for r in self.list_resource_groups()]
+
     def list_resource_groups(self):
         operations = self._resource_group_operations()
         params = ResourceGroupListParameters()
         result = operations.list(params)
-        return [r.getName() for r in result.getResourceGroups()]
+        return result.getResourceGroups()
+
+    def list_websites(self, resource_group):
+        operations = self._web_site_operations()
+        result = operations.list(resource_group, None, None)
+        return result.getWebSites()
 
     def create_resource_group(self, name, location, tags=None):
         operations = self._resource_group_operations()
@@ -163,10 +171,13 @@ class AzureClient:
 
     def create_website(self, resource_group, site_name, location, service_plan):
         parameters = WebSiteCreateOrUpdateParameters()
+
         web = WebSiteBase()
         web.setLocation(location)
         properties = WebSiteBaseProperties()
         properties.setServerFarm(service_plan)
+
+
         web.setProperties(properties)
         parameters.setWebSite(web)
         self._web_site_operations().createOrUpdate(resource_group, site_name, None, parameters)
@@ -207,6 +218,7 @@ class AzureClient:
             vp.setValue(value)
             nv_pairs_list.add(vp)
         wsnv_params = WebSiteNameValueParameters()
+
         wsnv_params.setProperties(nv_pairs_list)
         wsnv_params.setLocation(location)
         self._web_site_operations().updateAppSettings(resource_group, site_name, None, wsnv_params)

@@ -11,11 +11,14 @@
 import os
 from com.microsoft.azure.management.websites.models import SkuOptions, WorkerSizeOptions, DatabaseServerType
 
-
 class CiStub(object):
 
     def getProperty(self, name):
         return self.__dict__[name]
+
+    def setProperty(self, name, value):
+        self.__dict__[name] = value
+
 
 
 class SubscriptionCi(CiStub):
@@ -33,7 +36,7 @@ class SubscriptionCi(CiStub):
         self.azureBaseURL = "https://management.azure.com/"
         self.azureManagementURL = "https://management.core.windows.net/"
         self.azureActiveDirectoryURL = "https://login.windows.net/"
-        self._init_from_file();
+        self._init_from_file()
 
     def _init_from_file(self):
         file_location = os.getenv('azure_subscription_conf')
