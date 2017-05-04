@@ -22,6 +22,7 @@
 
 ### Work in progress
 
+* Supports the discovery of resource groups and web apps for a given subscription
 * Supports Azure Web App deployments
 	* Application Settings
 	* Connection Strings
