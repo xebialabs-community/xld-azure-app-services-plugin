@@ -33,18 +33,23 @@ def discover_webapps(client, ctx, descriptor, base_id, resource_group):
             custom_conn_strings[conn_string.name] = conn_string.connectionString
         ci.setProperty("customConnectionStrings", custom_conn_strings)
         settings = client.get_general_settings(resource_group, ws.name)
-        ci.setProperty("platform32bit", settings.platform_32bit)
-        ci.setProperty("javaVersion", settings.java_version)
-        ci.setProperty("javaContainer", settings.java_container)
-        ci.setProperty("javaContainerVersion", settings.java_container_version)
-        ci.setProperty("netFrameworkVersion", settings.net_framework_version)
-        ci.setProperty("phpVersion", settings.php_version)
-        ci.setProperty("pythonVersion", settings.python_version)
+        set_non_empty_property(ci, "platform32bit", settings.platform_32bit)
+        set_non_empty_property(ci, "javaVersion", settings.java_version)
+        set_non_empty_property(ci, "javaContainer", settings.java_container)
+        set_non_empty_property(ci, "javaContainerVersion", settings.java_container_version)
+        set_non_empty_property(ci, "netFrameworkVersion", settings.net_framework_version)
+        set_non_empty_property(ci, "phpVersion", settings.php_version)
+        set_non_empty_property(ci, "pythonVersion", settings.python_version)
         discovered(ci, ctx)
 
 
+def set_non_empty_property(ci, name, value):
+    if value is not None and len(str(value).strip()) > 0:
+        ci.setProperty(name, value)
+
+
 def discover_resource_groups(client, ctx, descriptor, webapp_descriptor, base_id):
-    resource_groups = client.list_resource_groups();
+    resource_groups = client.list_resource_groups()
     print "Discovered %s resource groups" % (len(resource_groups))
     for rg in resource_groups:
         ci = descriptor.newInstance("%s/%s" % (base_id, rg.getName()))
