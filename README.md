@@ -20,7 +20,7 @@
 [xld-azure-app-services-plugin-downloads-image]: https://img.shields.io/github/downloads/xebialabs-community/xld-azure-app-services-plugin/total.svg
 
 
-### Work in progress
+## Features ##
 
 * Supports the discovery of resource groups and web apps for a given subscription
 * Supports Azure Web App deployments
@@ -29,6 +29,3 @@
 * Supports webjobs
 	* Triggered
 	* Continuous
-
-	 
-* TODO: update documentation
