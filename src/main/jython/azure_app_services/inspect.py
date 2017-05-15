@@ -26,6 +26,8 @@ def discover_webapps(client, ctx, descriptor, base_id, resource_group):
         ci.setProperty("appName", ws.name)
         ci.setProperty("plan", ws.getProperties().getServerFarm())
         app_settings = client.get_app_settings(resource_group, ws.name)
+        if "WEBSITE_NODE_DEFAULT_VERSION" in app_settings.keys():
+            app_settings.pop("WEBSITE_NODE_DEFAULT_VERSION", None)
         ci.setProperty("appSettings", app_settings)
         conn_strings = client.get_connection_strings(resource_group, ws.name)
         custom_conn_strings = {}
