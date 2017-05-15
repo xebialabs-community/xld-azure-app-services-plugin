@@ -20,6 +20,10 @@
 [xld-azure-app-services-plugin-downloads-image]: https://img.shields.io/github/downloads/xebialabs-community/xld-azure-app-services-plugin/total.svg
 
 
+## Overview ##
+
+The Azure App Service plugin is an XL Deploy plugin that has the ability to deploy to the Azure App Service backend. 
+
 ## Features ##
 
 * Supports the discovery of resource groups and web apps for a given subscription
@@ -29,3 +33,59 @@
 * Supports webjobs
 	* Triggered
 	* Continuous
+* Define Application Service Plan
+* Resource Group creation via control task
+
+
+## Requirements ##
+
+* **XLD Server** 6+
+		
+
+## Installation ##
+
+Plugin can be downloaded directly from the plugin's repository on [Github](https://github.com/xebialabs-community/xld-azure-app-services-plugin/releases).
+
+Place the plugin XLDP file into __&lt;xld-home&gt;/plugins__ directory.
+
+## Azure Connection Information ##
+
+Azure connection settings are defined in an __azure.Subscription__ configuration item under the **Infrastructure** node in the XL Deploy repository.
+
+| Property | Description |
+| -------- | ----------- |
+| subscriptionId   | Azure subscription |
+| tenantId | Tenant Id |
+| clientId | Client Id |
+| clientKey | Client Key |
+| ftpUser | Ftp User |
+| ftpPassword | Ftp Password |
+
+
+Please refer to the [Create an Azure Active Directory application](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal#create-an-azure-active-directory-application)  section in [Create Service Principal](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal
+) documentation for setting up and obtaining a *Client Id*, *Client Key* and *Tenant Id*
+
+For information on setting up FTP credentials, please refer to [Deployment Credentions](https://github.com/projectkudu/kudu/wiki/Deployment-credentials)
+
+
+## Discovery ##
+
+__azure.Subscription__ supports XL Deploy's discovery feature. Discovery of the following types are supported :
+
+* Resource Group (__azure.ResourceGroup__)
+* Web App (__azure.WebAppModule__)
+
+
+
+## Deployable Types ##
+
+| Deployable | Target Container |
+| -------- | ----------- | 
+| azure.AppServicePlanSpec   | azure.ResourceGroup | 
+| azure.WebApp   | azure.ResourceGroup | 
+| azure.TriggeredWebJobModule   | azure.ResourceGroup | 
+| azure.ContinuousWebJobModule   | azure.ResourceGroup | 
+
+
+
+
