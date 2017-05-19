@@ -118,6 +118,11 @@ class AzureClient:
         result = operations.list(resource_group, None, None)
         return result.getWebSites()
 
+    def list_service_plans(self, resource_group):
+        operations = self._web_hosting_plans_operations()
+        result = operations.list(resource_group)
+        return result.getWebHostingPlans()
+
     def create_resource_group(self, name, location, tags=None):
         operations = self._resource_group_operations()
         params = ResourceGroup()

@@ -26,7 +26,7 @@ The Azure App Service plugin is an XL Deploy plugin that has the ability to depl
 
 ## Features ##
 
-* Supports the discovery of resource groups and web apps for a given subscription
+* Supports the discovery of resource groups, service plans and web apps for a given subscription
 * Supports Azure Web App deployments
 	* Application Settings
 	* Connection Strings

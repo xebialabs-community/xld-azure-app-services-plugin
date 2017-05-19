@@ -45,12 +45,25 @@ def discover_webapps(client, ctx, descriptor, base_id, resource_group):
         discovered(ci, ctx)
 
 
+def discover_service_plans(client, ctx, descriptor, base_id, resource_group):
+    plans = client.list_service_plans(resource_group)
+    print "Discovered %s service plans for resource group %s" % (len(plans), resource_group)
+    for sp in plans:
+        print "Inspecting properties for %s service plan" % (sp.name)
+        ci = descriptor.newInstance("%s/%s" % (base_id, sp.name))
+        ci.setProperty("servicePlanName", sp.name)
+        ci.setProperty("location", sp.location)
+        ci.setProperty("workerSize", sp.getProperties().getWorkerSize())
+        ci.setProperty("sku", sp.getProperties().getSku())
+        discovered(ci, ctx)
+
+
 def set_non_empty_property(ci, name, value):
     if value is not None and len(str(value).strip()) > 0:
         ci.setProperty(name, value)
 
 
-def discover_resource_groups(client, ctx, descriptor, webapp_descriptor, base_id):
+def discover_resource_groups(client, ctx, descriptor, webapp_descriptor, service_plan_descriptor, base_id):
     resource_groups = client.list_resource_groups()
     print "Discovered %s resource groups" % (len(resource_groups))
     for rg in resource_groups:
@@ -60,18 +73,20 @@ def discover_resource_groups(client, ctx, descriptor, webapp_descriptor, base_id
         ci.setProperty("resourceTags", rg.getTags())
         discovered(ci, ctx)
     [discover_webapps(client, ctx,webapp_descriptor, "%s/%s" % (base_id, rg.name), rg.name) for rg in resource_groups]
+    [discover_service_plans(client, ctx, service_plan_descriptor, "%s/%s" % (base_id, rg.name), rg.name) for rg in resource_groups]
 
 
-def perform_discovery(subscription, ctx, resource_group_descriptor, web_app_module_descriptor):
+def perform_discovery(subscription, ctx, resource_group_descriptor, web_app_module_descriptor, service_plan_descriptor):
     client = AzureClient.new_instance(subscription)
-    discover_resource_groups(client, ctx, resource_group_descriptor, web_app_module_descriptor, subscription.id)
+    discover_resource_groups(client, ctx, resource_group_descriptor, web_app_module_descriptor, service_plan_descriptor, subscription.id)
 
 
 if __name__ == '__main__' or __name__ == '__builtin__':
     print "Starting discovery of resource groups and web apps"
     resource_group_descriptor = Type.valueOf("azure.ResourceGroup").getDescriptor()
     web_app_module_descriptor = Type.valueOf("azure.WebAppModule").getDescriptor()
+    service_plan_descriptor = Type.valueOf("azure.AppServicePlan").getDescriptor()
     # if XLD sugar utility wrappers available use it to
     if wrap:
         thisCi = wrap(thisCi)
-    perform_discovery(thisCi, inspectionContext, resource_group_descriptor, web_app_module_descriptor)
+    perform_discovery(thisCi, inspectionContext, resource_group_descriptor, web_app_module_descriptor, service_plan_descriptor)

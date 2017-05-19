@@ -50,7 +50,7 @@ class InspectionTest(unittest.TestCase):
 
     def test_discovery(self):
         self.client = AzureClient.new_instance(self.subscription)
-        inspect.perform_discovery(self.subscription, self.inspection_ctx, self.descriptor, self.descriptor)
+        inspect.perform_discovery(self.subscription, self.inspection_ctx, self.descriptor, self.descriptor, self.descriptor)
         for ci in self.inspection_ctx.cis:
             print ci.__dict__
         # self.assertTrue(len(self.inspection_ctx) > 0)
