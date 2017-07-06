@@ -1,7 +1,7 @@
 plugins {
-    id "com.xebialabs.xldp" version "1.0.5"
-    id "com.github.hierynomus.license" version "0.13.1"
-    id "com.xebialabs.xl.docker" version "1.1.0"
+  id "com.xebialabs.xldp" version "1.0.5"
+  id "com.github.hierynomus.license" version "0.13.1"
+  id "com.xebialabs.xl.docker" version "1.1.0"
 }
 
 apply plugin: 'java'
@@ -13,11 +13,11 @@ targetCompatibility = 1.8
 version = '6.0.0-alpha3'
 
 repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        url 'https://dist.xebialabs.com/public/maven2'
-    }
+  mavenLocal()
+  mavenCentral()
+  maven {
+    url 'https://dist.xebialabs.com/public/maven2'
+  }
 }
 
 
@@ -25,54 +25,54 @@ sourceSets.main.resources.srcDirs = ["src/main/jython", "src/main/resources"]
 sourceSets.test.resources.srcDirs = ["src/test/jython", "src/test/resources"]
 
 project.ext {
-    azureSdkVersion = "0.9.7"
-    apiVersion = "2017.2.2"
+  azureSdkVersion = "0.9.7"
+  apiVersion = "2017.2.2"
 }
 
 dependencies {
 
-    compile "com.xebialabs.deployit:udm-plugin-api:$apiVersion"
-    compile "com.microsoft.azure:azure-mgmt-websites:${azureSdkVersion}"
-    compile "com.microsoft.azure:azure-servicebus:${azureSdkVersion}"
-    compile "com.microsoft.azure:azure-serviceruntime:${azureSdkVersion}"
-    compile "com.microsoft.azure:azure-mgmt-utility:${azureSdkVersion}"
-    compile 'com.squareup.okhttp3:okhttp:3.4.2'
-    compile 'com.google.guava:guava:19.0'
+  compile "com.xebialabs.deployit:udm-plugin-api:$apiVersion"
+  compile "com.microsoft.azure:azure-mgmt-websites:${azureSdkVersion}"
+  compile "com.microsoft.azure:azure-servicebus:${azureSdkVersion}"
+  compile "com.microsoft.azure:azure-serviceruntime:${azureSdkVersion}"
+  compile "com.microsoft.azure:azure-mgmt-utility:${azureSdkVersion}"
+  compile 'com.squareup.okhttp3:okhttp:3.4.2'
+  compile 'com.google.guava:guava:19.0'
 
 
-    distBundle "com.microsoft.azure:azure-mgmt-utility:${azureSdkVersion}"
-    distBundle "com.microsoft.azure:azure-mgmt-websites:${azureSdkVersion}"
-    distBundle "com.microsoft.azure:azure-servicebus:${azureSdkVersion}"
-    distBundle "com.microsoft.azure:azure-serviceruntime:${azureSdkVersion}"
-    distBundle 'com.squareup.okhttp3:okhttp:3.4.2'
+  distBundle "com.microsoft.azure:azure-mgmt-utility:${azureSdkVersion}"
+  distBundle "com.microsoft.azure:azure-mgmt-websites:${azureSdkVersion}"
+  distBundle "com.microsoft.azure:azure-servicebus:${azureSdkVersion}"
+  distBundle "com.microsoft.azure:azure-serviceruntime:${azureSdkVersion}"
+  distBundle 'com.squareup.okhttp3:okhttp:3.4.2'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.slf4j:slf4j-log4j12:1.7.25'
-    testCompile 'log4j:log4j:1.2.17'
-    testCompile 'org.python:jython-standalone:2.7.0'
+  testCompile 'junit:junit:4.12'
+  testCompile 'org.slf4j:slf4j-log4j12:1.7.25'
+  testCompile 'log4j:log4j:1.2.17'
+  testCompile 'org.python:jython-standalone:2.7.0'
 }
 
 configurations {
-    distBundle.exclude module: 'commons-io'
-    distBundle.exclude module: 'jackson-core'
-    distBundle.exclude module: 'httpclient'
-    distBundle.exclude module: 'javax.inject'
-    distBundle.exclude module: 'commons-codec'
-    distBundle.exclude module: 'commons-lang'
-    distBundle.exclude module: 'httpcore'
-    distBundle.exclude module: 'activation'
-    distBundle.exclude module: 'org.codehaus.jettison:jettison'
-    distBundle.exclude module: 'jaxb-impl'
-    distBundle.exclude module: 'jaxb-api'
-    distBundle.exclude module: 'slf4j-api'
-    distBundle.exclude module: 'jcip-annotations'
-    distBundle.exclude module: 'bcprov-jdk15on'
-    distBundle.exclude module: 'mail'
+  distBundle.exclude module: 'commons-io'
+  distBundle.exclude module: 'jackson-core'
+  distBundle.exclude module: 'httpclient'
+  distBundle.exclude module: 'javax.inject'
+  distBundle.exclude module: 'commons-codec'
+  distBundle.exclude module: 'commons-lang'
+  distBundle.exclude module: 'httpcore'
+  distBundle.exclude module: 'activation'
+  distBundle.exclude module: 'org.codehaus.jettison:jettison'
+  distBundle.exclude module: 'jaxb-impl'
+  distBundle.exclude module: 'jaxb-api'
+  distBundle.exclude module: 'slf4j-api'
+  distBundle.exclude module: 'jcip-annotations'
+  distBundle.exclude module: 'bcprov-jdk15on'
+  distBundle.exclude module: 'mail'
 }
 
 license {
-    header rootProject.file('License.md')
-    strictCheck false
-    ext.year = Calendar.getInstance().get(Calendar.YEAR)
-    ext.name = 'XEBIALABS'
+  header rootProject.file('License.md')
+  strictCheck false
+  ext.year = Calendar.getInstance().get(Calendar.YEAR)
+  ext.name = 'XEBIALABS'
 }
