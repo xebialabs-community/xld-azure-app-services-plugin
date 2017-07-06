@@ -9,7 +9,7 @@ deploy:
   provider: releases
   api_key:
     secure: fFjn0xK1x0ocxtq4cnsx3dOwzRPJixYpIz7SaiQrNX+UanbygJGIgOBjhDdO1JsfLsyq1OoTdvOVe8GU5wDkiOff59btjVqPK+BrIrVdAUxWXfF0Lon88k78aOmIhzOpVdFEZQAleM1UeubkzjrV6KMxnG3zZ7DqLmnV/nYlCwKZlJST8qVJOyKEySBa6yt1ZQLbQTYJnwwNkU5EmY/7yDcVWdHyP0wiLUFIEvIptMn0RZGwrNw3sltsNYVNjvsedjjtS1itFEpzdpeqTXCvj7mal3wtg9M1fB1N9puqs3+hS/edX9/RCHspXH7zydnLj4XDvKLzs0xWA7MJBAZi+ckD20EhgEE+/BVaKW41TqECw/T7i2MAnX95ym7ceKxytAa0xEBeazhleWH/enrB72CHohyZh+YgfjmArz/rw1vvqutiSSNzTycXybGxlIkgk3k3cwSBMqu5+RGl2m+w02nlyFB2u7Ax0Z2bePd+hAW5Qjc1gGRpoyO9By2kyhUP4DljaklGVUqAiWx4PRCL61+1lPDlWDID8ycfmTFlBeNhuo2ULBFhgkRp0x95YaFcVCIYb8Kq3g+1soLMflaPjF6rA8irOA1I2YdP6y832q7xCTRxQouQsGXDQajnjZzc2IKZBpFuIXWKZiIf26Yd3dsBimLLLPpRQBuRyXoLzjM=
-  file: build/distributions/xld-azure-app-services-plugin-6.0.0-alpha2.xldp
+  file: build/distributions/xld-azure-app-services-plugin-6.0.0-alpha3.xldp
   skip_cleanup: true
   on:
     all_branches: true
