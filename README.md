@@ -40,6 +40,7 @@ The Azure App Service plugin is an XL Deploy plugin that has the ability to depl
 ## Requirements ##
 
 * **XLD Server** 6+
+* Version 6.x of this plugin is NOT compatible with XLD 7.x
 		
 
 ## Installation ##

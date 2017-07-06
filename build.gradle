@@ -11,9 +11,9 @@ apply plugin: 'maven'
 
 xlDocker {
   compileImage = 'xebialabs/xld_dev_compile'
-  compileVersion = 'v7.0.0.1'
+  compileVersion = 'v6.2.1.1'
   runImage = 'xebialabs/xld_dev_run'
-  runVersion = 'v7.0.0.1'
+  runVersion = 'v6.2.1.1'
   runPortMapping = '14516:4516'
 }
 
